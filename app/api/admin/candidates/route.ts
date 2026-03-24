@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createAdminClient();
-    const { data, error } = await supabase
+    const { data: inserted, error } = await supabase
       .from("candidates")
       .insert({
         name,
@@ -53,15 +53,19 @@ export async function POST(req: NextRequest) {
         gender: dbGender,
         group_name: group_name || "",
       })
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error("Create candidate error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ candidate: data }, { status: 201 });
+    if (!inserted || inserted.length === 0) {
+      console.error("Create candidate failed: No rows returned");
+      return NextResponse.json({ error: "No data returned after insert. Check RLS policies." }, { status: 500 });
+    }
+
+    return NextResponse.json({ candidate: inserted[0] }, { status: 201 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -98,19 +102,23 @@ export async function PUT(req: NextRequest) {
     if (group_name !== undefined) updates.group_name = group_name;
 
     const supabase = createAdminClient();
-    const { data, error } = await supabase
+    const { data: updated, error } = await supabase
       .from("candidates")
       .update(updates)
       .eq("id", id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error("Update candidate error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ candidate: data });
+    if (!updated || updated.length === 0) {
+      console.error("Update candidate failed: Row not found or not affected", { id });
+      return NextResponse.json({ error: "Candidate not found or no changes made" }, { status: 404 });
+    }
+
+    return NextResponse.json({ candidate: updated[0] });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
