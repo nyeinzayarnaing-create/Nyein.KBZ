@@ -18,18 +18,12 @@ export default function HomePage() {
         <p className="text-lg text-gray-500 font-medium mb-10">
           Cast your vote for the royal pair ✨
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex justify-center">
           <Link
             href="/vote"
             className="group px-10 py-4 rounded-2xl bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white font-bold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-purple-300/40 hover:scale-105 active:scale-95"
           >
             🗳️ Vote Now
-          </Link>
-          <Link
-            href="/admin-login"
-            className="px-10 py-4 rounded-2xl border-2 border-purple-200 text-[#6c5ce7] hover:bg-purple-50 font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95"
-          >
-            ⚙️ Admin
           </Link>
         </div>
       </div>
