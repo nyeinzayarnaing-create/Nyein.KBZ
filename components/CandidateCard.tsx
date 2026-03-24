@@ -8,6 +8,7 @@ type CandidateCardProps = {
   onVote: (candidateId: string) => void;
   disabled: boolean;
   voted: boolean;
+  isSelf?: boolean;
 };
 
 export function CandidateCard({
@@ -15,6 +16,7 @@ export function CandidateCard({
   onVote,
   disabled,
   voted,
+  isSelf = false,
 }: CandidateCardProps) {
   return (
     <div
@@ -56,15 +58,16 @@ export function CandidateCard({
         </h3>
         <button
           onClick={() => onVote(candidate.id)}
-          disabled={disabled || voted}
+          disabled={disabled || voted || isSelf}
           className={`
             w-full mt-2 py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-300
             ${voted ? "bg-purple-50 text-[#6c5ce7] cursor-default" : ""}
-            ${disabled && !voted ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
-            ${!disabled && !voted ? "bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white hover:shadow-md hover:shadow-purple-200 active:scale-95" : ""}
+            ${isSelf ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
+            ${disabled && !voted && !isSelf ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
+            ${!disabled && !voted && !isSelf ? "bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white hover:shadow-md hover:shadow-purple-200 active:scale-95" : ""}
           `}
         >
-          {voted ? "✓ Voted" : "Vote 🗳️"}
+          {voted ? "✓ Voted" : isSelf ? "Self ✋" : "Vote 🗳️"}
         </button>
       </div>
     </div>

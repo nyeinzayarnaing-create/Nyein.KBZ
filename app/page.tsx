@@ -20,7 +20,7 @@ export default function HomePage() {
         </p>
         <div className="flex justify-center">
           <Link
-            href="/vote"
+            href="/login"
             className="group px-10 py-4 rounded-2xl bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white font-bold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-purple-300/40 hover:scale-105 active:scale-95"
           >
             🗳️ Vote Now

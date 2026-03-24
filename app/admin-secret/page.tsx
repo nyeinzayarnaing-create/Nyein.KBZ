@@ -162,8 +162,8 @@ export default function AdminPage() {
             onReset={handleReset}
           />
 
-          {hasVotes && (
-            <div className="grid md:grid-cols-2 gap-12">
+          {!settings?.voting_active && hasVotes && (
+            <div className="grid md:grid-cols-2 gap-12 animate-bounce-in">
               <Leaderboard voteCounts={voteCounts} category="king" />
               <Leaderboard voteCounts={voteCounts} category="queen" />
             </div>

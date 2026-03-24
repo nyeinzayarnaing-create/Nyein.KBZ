@@ -2,6 +2,7 @@ export type Candidate = {
   id: string;
   name: string;
   photo_url: string | null;
+  employee_id: string | null;
   gender: "king" | "queen";
   group_name: string;
   created_at: string;

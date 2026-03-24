@@ -5,18 +5,20 @@ import { getVoterId, getKingVoted, getQueenVoted, clearVotedState } from "@/lib/
 import { supabase } from "@/lib/supabase";
 
 export type VoterState = {
-  voterId: string;
+  voterId: string | null;
   kingVoted: string | null;
   queenVoted: string | null;
+  isHydrated: boolean;
   refetch: () => void;
 };
 
 export function useVoterState(): VoterState {
-  const [state, setState] = useState<Omit<VoterState, "refetch">>({
-    voterId: "",
-    kingVoted: null,
-    queenVoted: null,
+  const [state, setState] = useState<Omit<VoterState, "refetch" | "isHydrated">>({
+    voterId: getVoterId(),
+    kingVoted: getKingVoted(),
+    queenVoted: getQueenVoted(),
   });
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const hydrate = useCallback(() => {
     const voterId = getVoterId();
@@ -49,6 +51,7 @@ export function useVoterState(): VoterState {
         queenVoted = null;
       }
       setState({ voterId, kingVoted, queenVoted });
+      setIsHydrated(true);
     }
 
     hydrateFromDb();
@@ -73,5 +76,5 @@ export function useVoterState(): VoterState {
     };
   }, [hydrate]);
 
-  return { ...state, refetch: hydrate };
+  return { ...state, isHydrated, refetch: hydrate };
 }

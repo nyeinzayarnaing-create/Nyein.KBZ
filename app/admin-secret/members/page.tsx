@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Papa from "papaparse";
 import type { Candidate } from "@/types";
 
 type FormData = {
     name: string;
     photo_url: string;
+    employee_id: string;
     gender: "king" | "queen";
     group_name: string;
 };
@@ -15,6 +17,7 @@ type FormData = {
 const emptyForm: FormData = {
     name: "",
     photo_url: "",
+    employee_id: "",
     gender: "king",
     group_name: "",
 };
@@ -38,6 +41,8 @@ export default function MembersPage() {
     const [uploading, setUploading] = useState(false);
     const [dragOver, setDragOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const bulkInputRef = useRef<HTMLInputElement>(null);
+    const [bulkUploading, setBulkUploading] = useState(false);
 
     const fetchCandidates = useCallback(async () => {
         setLoading(true);
@@ -157,6 +162,7 @@ export default function MembersPage() {
         setForm({
             name: candidate.name,
             photo_url: candidate.photo_url || "",
+            employee_id: candidate.employee_id || "",
             gender: candidate.gender,
             group_name: candidate.group_name || "",
         });
@@ -236,6 +242,83 @@ export default function MembersPage() {
         }
     }
 
+    // Convert standard google drive viewer link to thumbnail direct image link
+    function getDirectGoogleDriveLink(url: string) {
+        if (!url) return url;
+        const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+            return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+        }
+        return url;
+    }
+
+    function handleBulkUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setBulkUploading(true);
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: async (results) => {
+                try {
+                    // Map CSV fields with case-insensitive header matching
+                    const payload = results.data.map((row: any) => {
+                        const findValue = (keys: string[]) => {
+                            const foundKey = Object.keys(row).find(k =>
+                                keys.includes(k.toLowerCase().trim())
+                            );
+                            return foundKey ? row[foundKey] : "";
+                        };
+
+                        const rawGender = String(findValue(["gender", "sex", "category"]) || "").toLowerCase();
+                        const mappedGender = rawGender === "female" || rawGender === "lady" || rawGender === "queen" ? "queen" : "king";
+
+                        return {
+                            name: findValue(["name", "full name", "member name"]) || "",
+                            photo_url: getDirectGoogleDriveLink(findValue(["google drive image link", "photo_url", "image link", "photo", "image"]) || ""),
+                            employee_id: String(findValue(["employee id", "employee_id", "id", "emp id", "emp_id"]) || "").trim(),
+                            gender: mappedGender,
+                            group_name: findValue(["group", "group_name", "team", "department"]) || ""
+                        };
+                    }).filter((item) => item.name); // basic validation
+
+                    if (payload.length === 0) {
+                        alert("No valid rows found in CSV.");
+                        setBulkUploading(false);
+                        return;
+                    }
+
+                    const res = await fetch("/api/admin/candidates/bulk", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ candidates: payload })
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) {
+                        alert(`Bulk upload failed: ${data.error}`);
+                    } else {
+                        alert(`Successfully uploaded ${payload.length} members!`);
+                        fetchCandidates();
+                    }
+                } catch (err) {
+                    console.error("Bulk upload error:", err);
+                    alert("Import failed. Make sure your CSV has the columns: google drive image link, employee id, name, gender");
+                } finally {
+                    setBulkUploading(false);
+                    if (bulkInputRef.current) bulkInputRef.current.value = "";
+                }
+            },
+            error: (error) => {
+                console.error("PapaParse error:", error);
+                alert("Failed to parse CSV file.");
+                setBulkUploading(false);
+                if (bulkInputRef.current) bulkInputRef.current.value = "";
+            }
+        });
+    }
+
     const filtered = candidates.filter((c) => {
         const matchCategory =
             filterCategory === "all" || c.gender === filterCategory;
@@ -279,25 +362,46 @@ export default function MembersPage() {
                             👥 Members
                         </h1>
                     </div>
-                    <button
-                        onClick={openCreate}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white font-bold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-purple-300/40 hover:scale-105 active:scale-95"
-                    >
-                        <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+
+                    <div className="flex gap-3">
+                        <input
+                            type="file"
+                            accept=".csv"
+                            ref={bulkInputRef}
+                            onChange={handleBulkUpload}
+                            className="hidden"
+                        />
+                        <button
+                            onClick={() => bulkInputRef.current?.click()}
+                            disabled={bulkUploading}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white border border-purple-200 text-[#6c5ce7] hover:bg-purple-50 hover:border-purple-300 font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-300/40 hover:scale-105 active:scale-95"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 4v16m8-8H4"
-                            />
-                        </svg>
-                        Add Member
-                    </button>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            {bulkUploading ? "Uploading..." : "Bulk Upload CSV"}
+                        </button>
+
+                        <button
+                            onClick={openCreate}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white font-bold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-purple-300/40 hover:scale-105 active:scale-95"
+                        >
+                            <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 4v16m8-8H4"
+                                />
+                            </svg>
+                            Add Member
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -495,7 +599,12 @@ export default function MembersPage() {
                                                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
                                                 />
                                             </svg>
-                                            {candidate.group_name}
+                                            {candidate.group_name} {candidate.employee_id && `• ID: ${candidate.employee_id}`}
+                                        </p>
+                                    )}
+                                    {!candidate.group_name && candidate.employee_id && (
+                                        <p className="text-sm text-gray-400 mt-0.5 flex items-center gap-1.5">
+                                            ID: {candidate.employee_id}
                                         </p>
                                     )}
                                     <div className="mt-3 flex gap-2">
@@ -656,6 +765,22 @@ export default function MembersPage() {
                                     }
                                     className="w-full px-4 py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all"
                                     placeholder="Enter member name"
+                                />
+                            </div>
+
+                            {/* Employee ID */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1.5">
+                                    Employee ID
+                                </label>
+                                <input
+                                    type="text"
+                                    value={form.employee_id}
+                                    onChange={(e) =>
+                                        setForm((f) => ({ ...f, employee_id: e.target.value }))
+                                    }
+                                    className="w-full px-4 py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all"
+                                    placeholder="e.g. EMP-001"
                                 />
                             </div>
 
