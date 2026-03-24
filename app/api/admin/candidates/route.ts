@@ -29,14 +29,16 @@ export async function POST(req: NextRequest) {
 
     if (!name || !gender) {
       return NextResponse.json(
-        { error: "Name and gender (king/queen) are required" },
+        { error: "Name and gender (men/lady) are required" },
         { status: 400 }
       );
     }
 
-    if (!["king", "queen"].includes(gender)) {
+    const genderMap: Record<string, "king" | "queen"> = { men: "king", king: "king", lady: "queen", queen: "queen" };
+    const dbGender = genderMap[String(gender).toLowerCase()];
+    if (!dbGender) {
       return NextResponse.json(
-        { error: "Gender must be 'king' or 'queen'" },
+        { error: "Gender must be 'men' or 'lady'" },
         { status: 400 }
       );
     }
@@ -47,7 +49,7 @@ export async function POST(req: NextRequest) {
       .insert({
         name,
         photo_url: photo_url || null,
-        gender,
+        gender: dbGender,
         group_name: group_name || "",
       })
       .select()
@@ -81,13 +83,15 @@ export async function PUT(req: NextRequest) {
     if (name !== undefined) updates.name = name;
     if (photo_url !== undefined) updates.photo_url = photo_url || null;
     if (gender !== undefined) {
-      if (!["king", "queen"].includes(gender)) {
+      const genderMap: Record<string, "king" | "queen"> = { men: "king", king: "king", lady: "queen", queen: "queen" };
+      const dbGender = genderMap[String(gender).toLowerCase()];
+      if (!dbGender) {
         return NextResponse.json(
-          { error: "Gender must be 'king' or 'queen'" },
+          { error: "Gender must be 'men' or 'lady'" },
           { status: 400 }
         );
       }
-      updates.gender = gender;
+      updates.gender = dbGender;
     }
     if (group_name !== undefined) updates.group_name = group_name;
 

@@ -59,7 +59,7 @@ export function WinnerReveal({
       <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch animate-bounce-in">
         {kingWinner && (
           <WinnerCard
-            title="King"
+            title="Men"
             emoji="👑"
             name={kingWinner.name}
             photoUrl={kingWinner.photo_url}
@@ -72,7 +72,7 @@ export function WinnerReveal({
         )}
         {queenWinner && (
           <WinnerCard
-            title="Queen"
+            title="Lady"
             emoji="👸"
             name={queenWinner.name}
             photoUrl={queenWinner.photo_url}

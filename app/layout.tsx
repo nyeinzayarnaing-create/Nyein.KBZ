@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "King & Queen Voting",
-  description: "Vote for your King and Queen",
+  title: "Men & Lady Voting",
+  description: "Vote for your Men and Lady",
 };
 
 export default function RootLayout({

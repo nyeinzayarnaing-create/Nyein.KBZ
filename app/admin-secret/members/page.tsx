@@ -304,11 +304,11 @@ export default function MembersPage() {
                     </div>
                     <div className="bg-white rounded-2xl p-4 border border-blue-100 text-center card-shadow">
                         <p className="text-3xl font-extrabold text-blue-500">{kingCount}</p>
-                        <p className="text-xs text-gray-400 mt-1 font-medium">👑 Kings</p>
+                        <p className="text-xs text-gray-400 mt-1 font-medium">👑 Men</p>
                     </div>
                     <div className="bg-white rounded-2xl p-4 border border-pink-100 text-center card-shadow">
                         <p className="text-3xl font-extrabold text-pink-500">{queenCount}</p>
-                        <p className="text-xs text-gray-400 mt-1 font-medium">👸 Queens</p>
+                        <p className="text-xs text-gray-400 mt-1 font-medium">👸 Lady</p>
                     </div>
                 </div>
 
@@ -349,8 +349,8 @@ export default function MembersPage() {
                                 {cat === "all"
                                     ? "All"
                                     : cat === "king"
-                                        ? "👑 Kings"
-                                        : "👸 Queens"}
+                                        ? "👑 Men"
+                                        : "👸 Lady"}
                             </button>
                         ))}
                     </div>
@@ -420,7 +420,7 @@ export default function MembersPage() {
                                                 : "text-pink-600"
                                                 }`}
                                         >
-                                            {candidate.gender === "king" ? "👑 King" : "👸 Queen"}
+                                            {candidate.gender === "king" ? "👑 Men" : "👸 Lady"}
                                         </span>
                                     </div>
 
@@ -681,7 +681,7 @@ export default function MembersPage() {
                                             : "bg-gray-50 border-2 border-gray-200 text-gray-400 hover:border-blue-200"
                                             }`}
                                     >
-                                        <span className="text-lg">👑</span> King
+                                        <span className="text-lg">👑</span> Men
                                     </button>
                                     <button
                                         type="button"
@@ -691,7 +691,7 @@ export default function MembersPage() {
                                             : "bg-gray-50 border-2 border-gray-200 text-gray-400 hover:border-pink-200"
                                             }`}
                                     >
-                                        <span className="text-lg">👸</span> Queen
+                                        <span className="text-lg">👸</span> Lady
                                     </button>
                                 </div>
                             </div>

@@ -13,7 +13,7 @@ export default function HomePage() {
           <span className="text-6xl">👑</span>
         </div>
         <h1 className="font-display text-5xl font-extrabold gradient-text mb-3">
-          King &amp; Queen
+          Men &amp; Lady
         </h1>
         <p className="text-lg text-gray-500 font-medium mb-10">
           Cast your vote for the royal pair ✨

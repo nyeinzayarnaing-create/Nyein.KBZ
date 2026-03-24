@@ -1,4 +1,4 @@
-# King & Queen Voting App
+# Men & Lady Voting App
 
 Real-time voting app built with Next.js, Tailwind CSS, and Supabase.
 
@@ -33,7 +33,7 @@ npm run dev
 
 ## Features
 
-- One vote for King and one vote for Queen per user (tracked via `voter_id` in localStorage)
+- One vote for Men and one vote for Lady per user (tracked via `voter_id` in localStorage)
 - Admin-controlled countdown timer and voting session
 - Real-time leaderboard updates via Supabase Realtime
 - Winner reveal with confetti effect

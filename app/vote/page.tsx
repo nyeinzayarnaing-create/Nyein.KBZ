@@ -19,6 +19,8 @@ type ConfirmState = {
 export default function VotePage() {
   const { settings } = useSettings();
   const { voterId, kingVoted, queenVoted, refetch: refetchVoter } = useVoterState();
+  const [localKingVoted, setLocalKingVoted] = useState<string | null>(null);
+  const [localQueenVoted, setLocalQueenVoted] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
@@ -33,6 +35,11 @@ export default function VotePage() {
   useEffect(() => {
     getVoterId();
   }, []);
+
+  useEffect(() => {
+    setLocalKingVoted(kingVoted);
+    setLocalQueenVoted(queenVoted);
+  }, [kingVoted, queenVoted]);
 
   useEffect(() => {
     async function fetchCandidates() {
@@ -77,20 +84,22 @@ export default function VotePage() {
       if (!error) {
         if (candidate.gender === "king") {
           setKingVoted(candidateId);
+          setLocalKingVoted(candidateId);
           refetchVoter();
           setConfirm({
             show: true,
             title: "🎉 Vote recorded!",
-            message: `You voted for ${candidate.name} as King. Tap Continue to vote for Queen.`,
+            message: `You voted for ${candidate.name} as Men. Tap Continue to vote for Lady.`,
             buttonText: "Continue →",
           });
         } else {
           setQueenVoted(candidateId);
+          setLocalQueenVoted(candidateId);
           refetchVoter();
           setConfirm({
             show: true,
             title: "🎉 Vote recorded!",
-            message: `You voted for ${candidate.name} as Queen. Thank you for voting!`,
+            message: `You voted for ${candidate.name} as Lady. Thank you for voting!`,
             buttonText: "Done ✨",
           });
         }
@@ -107,9 +116,9 @@ export default function VotePage() {
   const kings = candidates.filter((c) => c.gender === "king" && filterByName(c));
   const queens = candidates.filter((c) => c.gender === "queen" && filterByName(c));
 
-  const showKingSection = kingVoted === null;
-  const showQueenSection = kingVoted !== null && queenVoted === null;
-  const showComplete = kingVoted !== null && queenVoted !== null;
+  const showKingSection = localKingVoted === null;
+  const showQueenSection = localKingVoted !== null && localQueenVoted === null;
+  const showComplete = localKingVoted !== null && localQueenVoted !== null;
 
   if (loading) {
     return (
@@ -127,10 +136,10 @@ export default function VotePage() {
       <div className="sticky top-0 z-50 bg-[#faf9f7]/90 backdrop-blur-md px-4 pt-4 pb-2 border-b border-gray-100">
         <header className="text-center py-3">
           <h1 className="font-display text-3xl font-extrabold gradient-text">
-            {showKingSection ? "👑 Vote for King" : showQueenSection ? "👑 Vote for Queen" : "👑 King & Queen"}
+            {showKingSection ? "✨ Vote Star of the Night" : showQueenSection ? "✨ Vote Star of the Night" : "✨ Vote Star of the Night"}
           </h1>
           <p className="text-gray-400 mt-1 text-sm font-medium">
-            {showKingSection ? "Choose your King ♔" : showQueenSection ? "Now choose your Queen ♕" : "Vote for your favorites ✨"}
+            {showKingSection ? "Choose your Men" : showQueenSection ? "Choose your Lady" : "Vote for your favorites ✨"}
           </p>
         </header>
 
@@ -140,8 +149,8 @@ export default function VotePage() {
               type="search"
               placeholder={
                 showKingSection
-                  ? "🔍 Search King by name..."
-                  : "🔍 Search Queen by name..."
+                  ? "🔍 Search Men by name..."
+                  : "🔍 Search Lady by name..."
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -178,8 +187,8 @@ export default function VotePage() {
                       <CandidateCard
                         candidate={c}
                         onVote={(id) => handleVote(id, c)}
-                        disabled={votingClosed || kingVoted !== null}
-                        voted={kingVoted === c.id}
+                        disabled={votingClosed || localKingVoted !== null}
+                        voted={localKingVoted === c.id}
                       />
                     </div>
                   ))}
@@ -195,8 +204,8 @@ export default function VotePage() {
                       <CandidateCard
                         candidate={c}
                         onVote={(id) => handleVote(id, c)}
-                        disabled={votingClosed || queenVoted !== null}
-                        voted={queenVoted === c.id}
+                        disabled={votingClosed || localQueenVoted !== null}
+                        voted={localQueenVoted === c.id}
                       />
                     </div>
                   ))}

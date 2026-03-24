@@ -26,7 +26,7 @@ export function Leaderboard({ voteCounts, category }: LeaderboardProps) {
       <h2 className="font-display text-2xl md:text-3xl font-extrabold text-center mb-5">
         <span className="text-3xl mr-2">{emoji}</span>
         <span className={`bg-gradient-to-r ${accentFrom} ${accentTo} bg-clip-text text-transparent`}>
-          {isKing ? "King" : "Queen"} Leaderboard
+          {isKing ? "Men" : "Lady"} Leaderboard
         </span>
       </h2>
       {top5.length === 0 ? (

@@ -1,4 +1,4 @@
--- King & Queen Voting App - Initial Schema
+-- Men & Lady Voting App - Initial Schema
 -- Run this migration in your Supabase SQL editor
 
 -- Candidates table
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.votes (
 );
 
 -- One vote per voter per candidate (enforced by UNIQUE above)
--- One vote per category (king/queen) enforced in application layer
+-- One vote per category (men/lady) enforced in application layer
 
 -- Enable RLS on votes
 ALTER TABLE public.votes ENABLE ROW LEVEL SECURITY;

@@ -94,10 +94,10 @@ export default function AdminPage() {
         <div className="flex items-center justify-between max-w-5xl mx-auto mb-4">
           <div className="text-left">
             <h1 className="font-display text-4xl md:text-5xl font-extrabold gradient-text">
-              {"F21's King & Queen"}
+              Star of the Night
             </h1>
             <p className="text-gray-400 mt-2">
-              Manage your King &amp; Queen voting session
+              Manage your voting session
             </p>
           </div>
           <button
