@@ -1,8 +1,26 @@
-"use client";
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import confetti, { type Options as ConfettiOptions } from "canvas-confetti";
-import Image from "next/image";
+
+// Convert any Google Drive share/view link to a directly embeddable CDN URL
+function getDirectGoogleDriveLink(url: string): string {
+  if (!url) return url;
+  let id: string | null = null;
+
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) id = fileMatch[1];
+
+  if (!id) {
+    const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch) id = idMatch[1];
+  }
+
+  if (!id) {
+    const lhMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (lhMatch) id = lhMatch[1];
+  }
+
+  return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
+}
 
 type Winner = {
   name: string;
@@ -119,21 +137,23 @@ function WinnerCard({
   borderColor: string;
   bgLight: string;
 }) {
+  const [imgError, setImgError] = useState(false);
+  const photoSrc = photoUrl ? getDirectGoogleDriveLink(photoUrl) : null;
+
   return (
     <div className={`flex flex-col items-center w-72 p-8 rounded-3xl border-2 ${borderColor} bg-white card-shadow`}>
       <span className="text-5xl mb-3 animate-float">{emoji}</span>
       <h3 className={`font-display text-2xl font-extrabold uppercase tracking-wider bg-gradient-to-r ${accentFrom} ${accentTo} bg-clip-text text-transparent`}>
         {title}
       </h3>
-      <div className={`mt-5 w-40 h-40 rounded-full overflow-hidden ${bgLight} border-4 ${borderColor} flex-shrink-0`}>
-        {photoUrl ? (
-          <Image
-            src={photoUrl}
+      <div className={`mt-5 w-40 h-40 rounded-full overflow-hidden ${bgLight} border-4 ${borderColor} flex-shrink-0 relative`}>
+        {photoSrc && !imgError ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoSrc}
             alt={name}
-            width={160}
-            height={160}
-            className="object-cover w-full h-full"
-            unoptimized
+            onError={() => setImgError(true)}
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl">

@@ -1,7 +1,28 @@
 "use client";
 
-import Image from "next/image";
+import { useState } from "react";
 import type { Candidate } from "@/types";
+
+// Convert any Google Drive share/view link to a directly embeddable CDN URL
+function getDirectGoogleDriveLink(url: string): string {
+  if (!url) return url;
+  let id: string | null = null;
+
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) id = fileMatch[1];
+
+  if (!id) {
+    const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch) id = idMatch[1];
+  }
+
+  if (!id) {
+    const lhMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (lhMatch) id = lhMatch[1];
+  }
+
+  return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
+}
 
 type CandidateCardProps = {
   candidate: Candidate;
@@ -18,6 +39,9 @@ export function CandidateCard({
   voted,
   isSelf = false,
 }: CandidateCardProps) {
+  const [imgError, setImgError] = useState(false);
+  const photoSrc = candidate.photo_url ? getDirectGoogleDriveLink(candidate.photo_url) : null;
+
   return (
     <div
       className={`
@@ -28,14 +52,13 @@ export function CandidateCard({
       `}
     >
       <div className="aspect-[3/4] bg-gray-50 relative">
-        {candidate.photo_url ? (
-          <Image
-            src={candidate.photo_url}
+        {photoSrc && !imgError ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoSrc}
             alt={candidate.name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 50vw, 200px"
-            unoptimized
+            onError={() => setImgError(true)}
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">

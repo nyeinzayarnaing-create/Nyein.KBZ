@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import Papa from "papaparse";
 import type { Candidate } from "@/types";
 
@@ -43,6 +42,11 @@ export default function MembersPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const bulkInputRef = useRef<HTMLInputElement>(null);
     const [bulkUploading, setBulkUploading] = useState(false);
+    const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
+
+    function handleImgError(id: string) {
+        setImgErrors((prev) => ({ ...prev, [id]: true }));
+    }
 
     const fetchCandidates = useCallback(async () => {
         setLoading(true);
@@ -242,13 +246,34 @@ export default function MembersPage() {
         }
     }
 
-    // Convert standard google drive viewer link to thumbnail direct image link
+    // Convert any Google Drive share/view/open URL to a directly embeddable thumbnail URL
     function getDirectGoogleDriveLink(url: string) {
         if (!url) return url;
-        const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        if (match && match[1]) {
-            return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+
+        // Already a thumbnail or uc export URL — extract id and reformat
+        let id: string | null = null;
+
+        // Format: /file/d/FILE_ID/
+        const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileMatch) id = fileMatch[1];
+
+        // Format: ?id=FILE_ID or &id=FILE_ID (open?id=, uc?id=, thumbnail?id=)
+        if (!id) {
+            const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (idMatch) id = idMatch[1];
         }
+
+        // Format: /d/FILE_ID (lh3.googleusercontent.com/d/...)
+        if (!id) {
+            const lhMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (lhMatch) id = lhMatch[1];
+        }
+
+        if (id) {
+            // Use lh3 CDN — direct image, no redirect, works for publicly shared files
+            return `https://lh3.googleusercontent.com/d/${id}`;
+        }
+
         return url;
     }
 
@@ -507,14 +532,13 @@ export default function MembersPage() {
                             >
                                 {/* Image */}
                                 <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
-                                    {candidate.photo_url ? (
-                                        <Image
-                                            src={candidate.photo_url}
+                                    {candidate.photo_url && !imgErrors[candidate.id] ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={getDirectGoogleDriveLink(candidate.photo_url)}
                                             alt={candidate.name}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                                            unoptimized
+                                            onError={() => handleImgError(candidate.id)}
+                                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
