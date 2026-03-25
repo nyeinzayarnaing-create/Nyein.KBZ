@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { getVoterId, getKingVoted, getQueenVoted, clearVotedState } from "@/lib/voter";
+import { getVoterId, getKingVoted, getQueenVoted, getPerformanceVoted, clearVotedState } from "@/lib/voter";
 import { supabase } from "@/lib/supabase";
 
 export type VoterState = {
   voterId: string | null;
   kingVoted: string | null;
   queenVoted: string | null;
+  performanceVoted: string | null;
   isHydrated: boolean;
   refetch: () => void;
 };
@@ -17,6 +18,7 @@ export function useVoterState(): VoterState {
     voterId: getVoterId(),
     kingVoted: getKingVoted(),
     queenVoted: getQueenVoted(),
+    performanceVoted: getPerformanceVoted(),
   });
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -24,10 +26,11 @@ export function useVoterState(): VoterState {
     const voterId = getVoterId();
     let kingVoted = getKingVoted();
     let queenVoted = getQueenVoted();
+    let performanceVoted = getPerformanceVoted();
 
     async function hydrateFromDb() {
       if (!supabase || !voterId) {
-        setState({ voterId, kingVoted, queenVoted });
+        setState({ voterId, kingVoted, queenVoted, performanceVoted });
         return;
       }
       const { data } = await supabase
@@ -50,7 +53,19 @@ export function useVoterState(): VoterState {
         kingVoted = null;
         queenVoted = null;
       }
-      setState({ voterId, kingVoted, queenVoted });
+
+      const { data: perfData } = await supabase
+        .from("performance_votes")
+        .select("group_id")
+        .eq("voter_id", voterId)
+        .single();
+      if (perfData) {
+        performanceVoted = perfData.group_id;
+      } else {
+        performanceVoted = null;
+      }
+
+      setState({ voterId, kingVoted, queenVoted, performanceVoted });
       setIsHydrated(true);
     }
 
@@ -68,6 +83,11 @@ export function useVoterState(): VoterState {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "votes" },
+        () => hydrate()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "performance_votes" },
         () => hydrate()
       )
       .subscribe();

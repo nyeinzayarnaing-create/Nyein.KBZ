@@ -5,6 +5,7 @@ import type { Settings } from "@/types";
 
 type TimerProps = {
   settings: Settings | null;
+  type?: "main" | "performance";
   onTimeUp?: () => void;
   isAdmin?: boolean;
   onStart?: (seconds: number) => void;
@@ -20,6 +21,7 @@ function formatTime(seconds: number): string {
 
 export function Timer({
   settings,
+  type = "main",
   onTimeUp,
   isAdmin = false,
   onStart,
@@ -29,12 +31,14 @@ export function Timer({
   const [remaining, setRemaining] = useState<number | null>(null);
   const [timerMinutes, setTimerMinutes] = useState(5);
 
+  const isVotingActive = type === "main" ? settings?.voting_active : settings?.performance_voting_active;
+
   useEffect(() => {
     if (!settings) return;
 
     setTimerMinutes(Math.round(settings.timer_seconds / 60) || 5);
 
-    if (settings.timer_end_at && settings.voting_active) {
+    if (settings.timer_end_at && isVotingActive) {
       const end = new Date(settings.timer_end_at).getTime();
       const update = () => {
         const now = Date.now();
@@ -45,12 +49,12 @@ export function Timer({
       update();
       const id = setInterval(update, 1000);
       return () => clearInterval(id);
-    } else if (!settings.voting_active) {
+    } else if (!isVotingActive) {
       setRemaining(null);
     } else {
       setRemaining(settings.timer_seconds);
     }
-  }, [settings, onTimeUp]);
+  }, [settings, isVotingActive, onTimeUp]);
 
   const isActive = remaining !== null && remaining > 0;
 
@@ -66,7 +70,7 @@ export function Timer({
         `}
       >
         <p className="text-gray-400 text-sm uppercase tracking-wider font-semibold mb-2">
-          {settings?.voting_active ? "⏱️ Time Remaining" : "⏱️ Countdown"}
+          {isVotingActive ? "⏱️ Time Remaining" : "⏱️ Countdown"}
         </p>
         <p
           className={`font-display text-5xl md:text-7xl font-extrabold ${isActive ? "gradient-text" : "text-gray-300"
@@ -74,8 +78,8 @@ export function Timer({
         >
           {remaining !== null
             ? formatTime(remaining)
-            : settings?.voting_active
-              ? formatTime(settings.timer_seconds)
+            : isVotingActive
+              ? formatTime(settings?.timer_seconds || 0)
               : "—"}
         </p>
       </div>
@@ -95,14 +99,14 @@ export function Timer({
           <span className="text-gray-400 text-sm font-medium">min</span>
           <button
             onClick={() => onStart(timerMinutes * 60)}
-            disabled={settings?.voting_active}
+            disabled={isVotingActive}
             className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-white font-bold transition-all duration-300 hover:shadow-lg hover:shadow-emerald-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             ▶️ Start
           </button>
           <button
             onClick={onStop}
-            disabled={!settings?.voting_active}
+            disabled={!isVotingActive}
             className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-400 to-red-500 text-white font-bold transition-all duration-300 hover:shadow-lg hover:shadow-red-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             ⏹️ Stop

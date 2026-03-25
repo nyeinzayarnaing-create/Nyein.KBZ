@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const { password } = body as { password?: string };
 
-    const expectedPassword = "F21Stars";
+    const expectedPassword = process.env.ADMIN_PASSCODE || "F21Stars";
 
     if (!password || password !== expectedPassword) {
       return NextResponse.json(

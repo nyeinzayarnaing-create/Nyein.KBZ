@@ -31,6 +31,7 @@ type Winner = {
 type WinnerRevealProps = {
   kingWinner: Winner | null;
   queenWinner: Winner | null;
+  performanceWinner?: Winner | null;
   onComplete?: () => void;
 };
 
@@ -59,15 +60,16 @@ function burst() {
 export function WinnerReveal({
   kingWinner,
   queenWinner,
+  performanceWinner,
   onComplete,
 }: WinnerRevealProps) {
   useEffect(() => {
-    if (kingWinner || queenWinner) {
+    if (kingWinner || queenWinner || performanceWinner) {
       burst();
       const t = setTimeout(() => burst(), 400);
       return () => clearTimeout(t);
     }
-  }, [kingWinner, queenWinner]);
+  }, [kingWinner, queenWinner, performanceWinner]);
 
   return (
     <div className="flex flex-col items-center">
@@ -101,8 +103,21 @@ export function WinnerReveal({
             bgLight="bg-pink-50"
           />
         )}
+        {performanceWinner && (
+          <WinnerCard
+            title="Best Group"
+            emoji="🎭"
+            name={performanceWinner.name}
+            photoUrl={performanceWinner.photo_url}
+            voteCount={performanceWinner.vote_count}
+            accentFrom="from-[#00b894]"
+            accentTo="to-[#55efc4]"
+            borderColor="border-[#00b894]/20"
+            bgLight="bg-[#00b894]/5"
+          />
+        )}
       </div>
-      {onComplete && (kingWinner || queenWinner) && (
+      {onComplete && (kingWinner || queenWinner || performanceWinner) && (
         <div className="mt-10">
           <button
             onClick={onComplete}

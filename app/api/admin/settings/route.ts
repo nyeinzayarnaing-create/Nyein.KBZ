@@ -42,6 +42,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    if (action === "start-performance") {
+      const seconds = Math.min(3600, Math.max(60, Number(timerSeconds) || 300));
+      const timerEndAt = new Date(Date.now() + seconds * 1000).toISOString();
+      const { error } = await supabase
+        .from("settings")
+        .update({
+          timer_seconds: seconds,
+          timer_end_at: timerEndAt,
+          performance_voting_active: true,
+          performance_winners_revealed: false,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", SETTINGS_ID);
+
+      if (error) throw error;
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === "stop-performance") {
+      const { error } = await supabase
+        .from("settings")
+        .update({
+          performance_voting_active: false,
+          timer_end_at: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", SETTINGS_ID);
+
+      if (error) throw error;
+      return NextResponse.json({ success: true });
+    }
+
     if (action === "reset") {
       const { error } = await supabase.rpc("reset_all_votes");
       if (error) {
@@ -51,6 +83,25 @@ export async function POST(request: NextRequest) {
           .neq("id", "00000000-0000-0000-0000-000000000000");
         if (delError) throw delError;
       }
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === "reveal") {
+      const { type } = body;
+      const updateData: any = { updated_at: new Date().toISOString() };
+
+      if (type === "performance") {
+        updateData.performance_winners_revealed = true;
+      } else {
+        updateData.winners_revealed = true;
+      }
+
+      const { error } = await supabase
+        .from("settings")
+        .update(updateData)
+        .eq("id", SETTINGS_ID);
+
+      if (error) throw error;
       return NextResponse.json({ success: true });
     }
 

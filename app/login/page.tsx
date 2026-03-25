@@ -53,8 +53,8 @@ export default function LoginPage() {
 
             <div className="w-full max-w-md z-10">
                 <div className="text-center mb-10">
-                    <div className="mb-4 inline-block transform hover:scale-110 transition-transform cursor-default">
-                        <span className="text-6xl">✨</span>
+                    <div className="mb-6 inline-block transform hover:scale-110 transition-transform cursor-default">
+                        <span className="text-7xl">👑</span>
                     </div>
                     <h1 className="font-display text-4xl font-extrabold gradient-text mb-2">
                         Voter Login

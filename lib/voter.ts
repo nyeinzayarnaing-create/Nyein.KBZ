@@ -1,6 +1,7 @@
 const VOTER_ID_KEY = "kq_voter_id";
 const KING_VOTED_KEY = "kq_king_voted";
 const QUEEN_VOTED_KEY = "kq_queen_voted";
+const PERFORMANCE_VOTED_KEY = "kq_performance_voted";
 
 export function getVoterId(): string | null {
   if (typeof window === "undefined") return null;
@@ -17,6 +18,7 @@ export function clearVoterId(): void {
   localStorage.removeItem(VOTER_ID_KEY);
   localStorage.removeItem(KING_VOTED_KEY);
   localStorage.removeItem(QUEEN_VOTED_KEY);
+  localStorage.removeItem(PERFORMANCE_VOTED_KEY);
 }
 
 export function getKingVoted(): string | null {
@@ -29,6 +31,11 @@ export function getQueenVoted(): string | null {
   return localStorage.getItem(QUEEN_VOTED_KEY);
 }
 
+export function getPerformanceVoted(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(PERFORMANCE_VOTED_KEY);
+}
+
 export function setKingVoted(candidateId: string): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(KING_VOTED_KEY, candidateId);
@@ -37,6 +44,11 @@ export function setKingVoted(candidateId: string): void {
 export function setQueenVoted(candidateId: string): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(QUEEN_VOTED_KEY, candidateId);
+}
+
+export function setPerformanceVoted(groupId: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(PERFORMANCE_VOTED_KEY, groupId);
 }
 
 export function hasVotedInCategory(gender: "king" | "queen"): boolean {
@@ -53,4 +65,5 @@ export function clearVotedState(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(KING_VOTED_KEY);
   localStorage.removeItem(QUEEN_VOTED_KEY);
+  localStorage.removeItem(PERFORMANCE_VOTED_KEY);
 }

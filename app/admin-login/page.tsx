@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -44,9 +44,11 @@ export default function AdminLoginPage() {
       <div className="absolute top-1/3 right-[-40px] w-40 h-40 bg-yellow-300/20 rounded-full blur-2xl animate-float" />
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="mb-6 text-center">
-          <span className="text-5xl">🛡️</span>
-          <h1 className="mt-4 font-display text-3xl font-extrabold gradient-text">
+        <div className="mb-10 text-center">
+          <div className="mb-6 inline-block transform hover:scale-110 transition-transform cursor-default">
+            <span className="text-7xl">👑</span>
+          </div>
+          <h1 className="font-display text-4xl font-extrabold gradient-text">
             Admin Access
           </h1>
           <p className="mt-2 text-sm text-gray-500 font-medium">

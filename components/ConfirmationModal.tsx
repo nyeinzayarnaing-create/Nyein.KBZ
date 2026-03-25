@@ -6,6 +6,8 @@ type ConfirmationModalProps = {
   message: string;
   buttonText: string;
   onClose: () => void;
+  onConfirm?: () => void;
+  cancelText?: string;
 };
 
 export function ConfirmationModal({
@@ -14,6 +16,8 @@ export function ConfirmationModal({
   message,
   buttonText,
   onClose,
+  onConfirm,
+  cancelText = "Cancel",
 }: ConfirmationModalProps) {
   if (!show) return null;
 
@@ -33,12 +37,32 @@ export function ConfirmationModal({
           {title}
         </h3>
         <p className="text-gray-500 mb-6 text-center leading-relaxed">{message}</p>
-        <button
-          onClick={onClose}
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white font-bold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-purple-300/40 hover:scale-[1.02] active:scale-95"
-        >
-          {buttonText}
-        </button>
+        {onConfirm ? (
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 py-3.5 rounded-2xl bg-gray-100 text-gray-700 font-bold text-lg transition-all duration-300 hover:bg-gray-200 hover:scale-[1.02] active:scale-95"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={() => {
+                onConfirm();
+                onClose();
+              }}
+              className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white font-bold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-purple-300/40 hover:scale-[1.02] active:scale-95"
+            >
+              {buttonText}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onClose}
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#6c5ce7] to-[#a29bfe] text-white font-bold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-purple-300/40 hover:scale-[1.02] active:scale-95"
+          >
+            {buttonText}
+          </button>
+        )}
       </div>
     </div>
   );
